@@ -102,7 +102,9 @@ function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
 function run(args) {
   args = parseArgs(args);
   const word = Application("Microsoft Word");
-  word.activate();
+  word.launch();
+  delay(0.5);
+  // word.activate();
 
   if (args.batch) {
     console.log(`Batch Converting Word Documents in: ${args.inputPath}`);
@@ -118,7 +120,15 @@ function run(args) {
       const doc = word.activeDocument;
       const outputFilePath =
         args.outputPath + "/" + file.replace(".docx", ".pdf");
-      doc.saveAs({ fileName: outputFilePath, fileFormat: "format PDF" });
+      try {
+        doc.saveAs({ fileName: outputFilePath, fileFormat: "format PDF" });
+        console.log(JSON.stringify({'input': filepath.toString(), 'output': outputFilePath, result: 'success'}));
+      } catch (e) {
+        console.log(e);
+        console.log(JSON.stringify({'input': filepath.toString(), 'output': outputFilePath, result: 'error'}));
+        console.log(`Failed to save ${outputFilePath}`);
+        $.exit(1);
+      }
       doc.close({ saving: "no" });
     }
   } else {
@@ -128,8 +138,10 @@ function run(args) {
     const doc = word.activeDocument;
     try {
       doc.saveAs({ fileName: args.outputPath, fileFormat: "format PDF" });
+      console.log(JSON.stringify({'input': args.inputPath.toString(), 'output': args.outputPath, result: 'success'}));
     } catch (e) {
       console.log(e);
+      console.log(JSON.stringify({'input': args.inputPath.toString(), 'output': args.outputPath, result: 'error'}));
       console.log(`Failed to save ${args.outputPath}`);
       $.exit(1);
     }

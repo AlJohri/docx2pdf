@@ -1,32 +1,38 @@
 import sys
-import pathlib
+import json
 import subprocess
+from pathlib import Path
 from importlib_metadata import version
+from tqdm.auto import tqdm
 
 __version__ = version(__package__)
-
-"""
-TODO: make output not required, convert inplace
-TODO: move the dir/folder checks into python and add a batch argument?
-TODO: create for loop for windows batch convert
-"""
 
 def windows(input_path, output_path, keep_active):
     import win32com.client
     word = win32com.client.Dispatch('Word.Application')
     wdFormatPDF = 17
-    docx_filepath = Path(input_path).resolve()
-    pdf_filepath = Path(output_path).resolve()
-    doc = word.Documents.Open(str(docx_filepath))
-    doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
-    doc.Close()
+
+    paths = resolve_paths(input_path, output_path)
+
+    if paths['bulk']:
+    	for docx_filepath in tqdm(sorted(Path(paths['input']).glob("*.docx"))):
+    		pdf_filepath = Path(paths['output']) / (str(docx_filepath.stem) + ".pdf")
+    		doc = word.Documents.Open(str(docx_filepath))
+    		doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+    		doc.close()
+    else:
+	    docx_filepath = Path(paths['input']).resolve()
+    	pdf_filepath = Path(paths['output']).resolve()
+    	doc = word.Documents.Open(str(docx_filepath))
+    	doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+    	doc.Close()
+
     if not keep_active:
     	word.Quit()
 
 def macos(input_path, output_path, keep_active):
 	paths = resolve_paths(input_path, output_path)
-	print(paths)
-	script = (pathlib.Path(__file__).parent / 'convert.jxa').resolve()
+	script = (Path(__file__).parent / 'convert.jxa').resolve()
 	cmd = [
 		"/usr/bin/osascript",
 		"-l",
@@ -36,11 +42,31 @@ def macos(input_path, output_path, keep_active):
 		paths['output'],
 		str(keep_active).lower(),
 	]
-	return subprocess.run(cmd, check=True)
+
+	def run(cmd):
+	    process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+	    while True:
+	        line = process.stderr.readline().rstrip()
+	        if not line:
+	            break
+	        yield line.decode('utf-8')
+
+	total = len(list(Path(paths['input']).glob('*.docx'))) if paths['batch'] else 1
+	pbar = tqdm(total=total)
+	for line in run(cmd):
+		try:
+			msg = json.loads(line)
+		except ValueError:
+			continue
+		if msg['result'] == 'success':
+			pbar.update(1)
+		elif msg['result'] == 'error':
+			print(msg)
+			exit(1)
 
 def resolve_paths(input_path, output_path):
-	input_path = pathlib.Path(input_path).resolve()
-	output_path = pathlib.Path(output_path).resolve() if output_path else None
+	input_path = Path(input_path).resolve()
+	output_path = Path(output_path).resolve() if output_path else None
 	output = {}
 	if input_path.is_dir():
 		output['batch'] = True
