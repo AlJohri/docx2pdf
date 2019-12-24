@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "docx2pdf"
-version = "0.1.3"
+version = "0.1.4"
 description = "Convert docx to pdf on Windows or macOS directly using Microsoft Word (must be installed)."
 license = "MIT"
 readme = "README.md"
