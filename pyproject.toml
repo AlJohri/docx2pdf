@@ -2,6 +2,8 @@
 name = "docx2pdf"
 version = "0.1.0"
 description = ""
+readme = "README.md"
+homepage = "https://github.com/AlJohri/docx2pdf"
 authors = ["Al Johri <al.johri@gmail.com>"]
 
 [tool.poetry.dependencies]
