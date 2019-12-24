@@ -59,11 +59,13 @@ function isDir(path) {
 function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
   const [scriptPath] = getScriptPathAndFolder();
   if (inputPath === undefined || rest.length != 0) {
-    console.log(`Error. Usage: ./${scriptPath}.js <INPUT_PATH> <OUTPUT_PATH> <KEEP_ACTIVE>`);
+    console.log(
+      `Error. Usage: ./${scriptPath}.js <INPUT_PATH> <OUTPUT_PATH> <KEEP_ACTIVE>`
+    );
     $.exit(1);
   }
 
-  keepActive = (keepActive === "true");
+  keepActive = keepActive === "true";
 
   inputPath = Path(inputPath).toString();
   if (!outputPath) outputPath = inputPath;
@@ -111,7 +113,10 @@ function run(args) {
     if (args.inputPath != args.outputPath) {
       console.log(`Saving Output to: ${args.outputPath}`);
     }
-    const files = SystemEvents.folders.byName(args.inputPath).diskItems.name().sort();
+    const files = SystemEvents.folders
+      .byName(args.inputPath)
+      .diskItems.name()
+      .sort();
     for (file of files) {
       if (!file.endsWith(".docx")) continue;
       const filepath = Path(`${args.inputPath}/${file}`);
@@ -122,10 +127,23 @@ function run(args) {
         args.outputPath + "/" + file.replace(".docx", ".pdf");
       try {
         doc.saveAs({ fileName: outputFilePath, fileFormat: "format PDF" });
-        console.log(JSON.stringify({'input': filepath.toString(), 'output': outputFilePath, result: 'success'}));
+        console.log(
+          JSON.stringify({
+            input: filepath.toString(),
+            output: outputFilePath,
+            result: "success"
+          })
+        );
       } catch (e) {
         console.log(e);
-        console.log(JSON.stringify({'input': filepath.toString(), 'output': outputFilePath, result: 'error'}));
+        console.log(
+          JSON.stringify({
+            input: filepath.toString(),
+            output: outputFilePath,
+            result: "error",
+            error: e.toString()
+          })
+        );
         console.log(`Failed to save ${outputFilePath}`);
         $.exit(1);
       }
@@ -138,10 +156,23 @@ function run(args) {
     const doc = word.activeDocument;
     try {
       doc.saveAs({ fileName: args.outputPath, fileFormat: "format PDF" });
-      console.log(JSON.stringify({'input': args.inputPath.toString(), 'output': args.outputPath, result: 'success'}));
+      console.log(
+        JSON.stringify({
+          input: args.inputPath.toString(),
+          output: args.outputPath,
+          result: "success"
+        })
+      );
     } catch (e) {
       console.log(e);
-      console.log(JSON.stringify({'input': args.inputPath.toString(), 'output': args.outputPath, result: 'error'}));
+      console.log(
+        JSON.stringify({
+          input: args.inputPath.toString(),
+          output: args.outputPath,
+          result: "error",
+          error: e.toString()
+        })
+      );
       console.log(`Failed to save ${args.outputPath}`);
       $.exit(1);
     }
@@ -151,5 +182,4 @@ function run(args) {
   if (!args.keepActive) {
     word.quit();
   }
-
 }
