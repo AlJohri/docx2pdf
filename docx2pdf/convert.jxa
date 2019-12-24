@@ -1,0 +1,143 @@
+#!/usr/bin/osascript -l JavaScript
+
+/*
+Usage: ./convert-docx-to-pdf.jxa <INPUT_PATH> <OUTPUT_PATH>
+*/
+
+ObjC.import("stdlib");
+SystemEvents = Application("System Events");
+
+function assert(check, message) {
+  if (!check) {
+    console.log(message);
+    $.exit(1);
+  }
+}
+
+function getScriptObj() {
+  App = Application.currentApplication();
+  App.includeStandardAdditions = true;
+  let pathToMe = App.pathTo(this);
+  return SystemEvents.files[pathToMe.toString()];
+}
+
+function getScriptPathAndFolder() {
+  let scriptObj = getScriptObj();
+  let scriptPath = scriptObj.name();
+  let scriptFolder = scriptObj.container().posixPath();
+  return [scriptPath, scriptFolder];
+}
+
+function basename(path, extToStrip) {
+  // source: https://stackoverflow.com/a/33093630/1667241
+  path = path.toString();
+  if (path[path.length - 1] === "/") {
+    path = path.slice(0, -1);
+  }
+  if (typeof extToStrip === "string") {
+    return path.slice(-extToStrip.length) === extToStrip
+      ? $(path).lastPathComponent.js.slice(0, -extToStrip.length)
+      : $(path).lastPathComponent.js;
+  } else {
+    // assumed to be numeric: if truthy, strip any extension
+    return extToStrip
+      ? $(path).lastPathComponent.stringByDeletingPathExtension.js
+      : $(path).lastPathComponent.js;
+  }
+}
+
+function isDir(path) {
+  // ensure string
+  path = path.toString();
+  // resolve path if relative
+  if (!path.toString().startsWith("/")) path = Path(path).toString();
+  let isDir = Ref();
+  $.NSFileManager.alloc.init.fileExistsAtPathIsDirectory(path, isDir);
+  return isDir[0];
+}
+
+function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
+  const [scriptPath] = getScriptPathAndFolder();
+  if (inputPath === undefined || rest.length != 0) {
+    console.log(`Error. Usage: ./${scriptPath}.js <INPUT_PATH> <OUTPUT_PATH> <KEEP_ACTIVE>`);
+    $.exit(1);
+  }
+
+  keepActive = (keepActive === "true");
+
+  inputPath = Path(inputPath).toString();
+  if (!outputPath) outputPath = inputPath;
+
+  outputPath = Path(outputPath).toString();
+
+  let output = null;
+
+  if (isDir(inputPath)) {
+    assert(
+      isDir(outputPath),
+      `inputPath is a directory, but outputPath either does not exist or is not a directory. outputPath: ${outputPath}`
+    );
+    output = { batch: true, inputPath, outputPath, keepActive };
+  } else {
+    assert(
+      inputPath.endsWith(".docx"),
+      `inputPath is a file, but it does not end with docx. can only convert docx. inputPath: ${inputPath}`
+    );
+    if (outputPath.endsWith(".docx")) {
+      outputPath = outputPath.replace(".docx", ".pdf");
+    }
+    if (isDir(outputPath)) {
+      outputPath += "/" + basename(inputPath, ".docx") + ".pdf";
+    }
+    assert(
+      outputPath.endsWith(".pdf"),
+      `outputPath does not end with .pdf, outputPath directory may not exist. outputPath: ${outputPath}`
+    );
+    output = { batch: false, inputPath, outputPath, keepActive };
+  }
+
+  return output;
+}
+
+function run(args) {
+  args = parseArgs(args);
+  const word = Application("Microsoft Word");
+  word.activate();
+
+  if (args.batch) {
+    console.log(`Batch Converting Word Documents in: ${args.inputPath}`);
+    if (args.inputPath != args.outputPath) {
+      console.log(`Saving Output to: ${args.outputPath}`);
+    }
+    const files = SystemEvents.folders.byName(args.inputPath).diskItems.name().sort();
+    for (file of files) {
+      if (!file.endsWith(".docx")) continue;
+      const filepath = Path(`${args.inputPath}/${file}`);
+      console.log(`converting ${filepath}`);
+      word.open(filepath);
+      const doc = word.activeDocument;
+      const outputFilePath =
+        args.outputPath + "/" + file.replace(".docx", ".pdf");
+      doc.saveAs({ fileName: outputFilePath, fileFormat: "format PDF" });
+      doc.close({ saving: "no" });
+    }
+  } else {
+    console.log(`Converting Single Word Document: ${args.inputPath}`);
+    console.log(`Saving to: ${args.outputPath}`);
+    word.open(args.inputPath);
+    const doc = word.activeDocument;
+    try {
+      doc.saveAs({ fileName: args.outputPath, fileFormat: "format PDF" });
+    } catch (e) {
+      console.log(e);
+      console.log(`Failed to save ${args.outputPath}`);
+      $.exit(1);
+    }
+    doc.close({ saving: "no" });
+  }
+
+  if (!args.keepActive) {
+    word.quit();
+  }
+
+}
