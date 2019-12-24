@@ -104,9 +104,14 @@ function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
 function run(args) {
   args = parseArgs(args);
   const word = Application("Microsoft Word");
-  word.launch();
-  delay(0.5);
-  // word.activate();
+  if (!word.running()) {
+    word.activate();
+    delay(1);
+    SystemEvents.processes["Microsoft Word"].visible = false;
+  } else {
+    word.launch();
+    SystemEvents.processes["Microsoft Word"].visible = false;
+  }
 
   if (args.batch) {
     console.log(`Batch Converting Word Documents in: ${args.inputPath}`);
