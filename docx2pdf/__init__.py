@@ -45,8 +45,8 @@ def macos(paths, keep_active):
         "-l",
         "JavaScript",
         script,
-        paths["input"],
-        paths["output"],
+        str(paths["input"]),
+        str(paths["output"]),
         str(keep_active).lower(),
     ]
 

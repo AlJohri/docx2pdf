@@ -1,4 +1,13 @@
 [[package]]
+category = "main"
+description = "Control AppleScriptable applications from Python."
+marker = "sys_platform == \"darwin\""
+name = "appscript"
+optional = false
+python-versions = "*"
+version = "1.1.0"
+
+[[package]]
 category = "dev"
 description = "Atomic file writes."
 marker = "sys_platform == \"win32\""
@@ -192,10 +201,18 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "6e4a0fb0ee566dcf3b054966b699d9d3ba1af752894b0a2f38b3b6dd6dfa554e"
+content-hash = "4bb2971a53b0a58a4b0e9bfdfde591591badd2c74938bcd034c47b76c29723ef"
 python-versions = "^3.5"
 
 [metadata.files]
+appscript = [
+    {file = "appscript-1.1.0-cp27-cp27m-macosx_10_7_x86_64.whl", hash = "sha256:0a7c87276f93318d2fb0c56530cfd974f62ea33e07e124cf903f46a7398abffc"},
+    {file = "appscript-1.1.0-cp34-cp34m-macosx_10_6_x86_64.whl", hash = "sha256:8fe992508ce705b22772499c48682c81228743f527cb16bfc29e020f2d081cf3"},
+    {file = "appscript-1.1.0-cp35-cp35m-macosx_10_6_x86_64.whl", hash = "sha256:ce9acf845dfbf894ea1aec4373f4d4275b9f0a5380ad4c6aa2f958a3d2d39559"},
+    {file = "appscript-1.1.0-cp36-cp36m-macosx_10_7_x86_64.whl", hash = "sha256:ce4d530f33a838213bf52a0ddb813177bd13d9d31e262357a04306dea2c263f1"},
+    {file = "appscript-1.1.0-cp37-cp37m-macosx_10_7_x86_64.whl", hash = "sha256:87dbe865fcdeb06ff6f684759f3e5abbaa758500dc4776befed87e2819f579e6"},
+    {file = "appscript-1.1.0.tar.gz", hash = "sha256:35c2ba2894348413a29daa19008d5f1c349a832206eccc97ded50cee3ad852e5"},
+]
 atomicwrites = [
     {file = "atomicwrites-1.3.0-py2.py3-none-any.whl", hash = "sha256:03472c30eb2c5d1ba9227e4c2ca66ab8287fbfbbda3888aa93dc2e28fc6811b4"},
     {file = "atomicwrites-1.3.0.tar.gz", hash = "sha256:75a9445bac02d8d058d5e1fe689654ba5a6556a1dfd8ce6ec55a0ed79866cfa6"},
