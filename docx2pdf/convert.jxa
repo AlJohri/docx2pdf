@@ -2,6 +2,8 @@
 
 /*
 Usage: ./convert-docx-to-pdf.jxa <INPUT_PATH> <OUTPUT_PATH>
+
+Word Object Model: https://docs.microsoft.com/en-us/office/vba/api/overview/word/object-model
 */
 
 ObjC.import("stdlib");
