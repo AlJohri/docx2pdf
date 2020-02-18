@@ -6,6 +6,12 @@ Convert `docx` to `pdf` on Windows or macOS directly using Microsoft Word (must 
 
 On Windows, this is implemented via [`win32com`](https://pypi.org/project/pywin32/) while on macOS this is implemented via [JXA](https://github.com/JXA-Cookbook/JXA-Cookbook) (Javascript for Automation, aka AppleScript in JS).
 
+## Install
+
+```
+pip install docx2pdf
+```
+
 ## CLI
 
 ```
