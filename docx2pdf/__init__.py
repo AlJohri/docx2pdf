@@ -44,7 +44,7 @@ def macos(paths, keep_active):
         "/usr/bin/osascript",
         "-l",
         "JavaScript",
-        script,
+        str(script),
         str(paths["input"]),
         str(paths["output"]),
         str(keep_active).lower(),
