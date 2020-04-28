@@ -69,7 +69,7 @@ def macos(paths, keep_active):
             pbar.update(1)
         elif msg["result"] == "error":
             print(msg)
-            exit(1)
+            sys.exit(1)
 
 
 def resolve_paths(input_path, output_path):
@@ -117,7 +117,7 @@ def cli():
 
     if "--version" in sys.argv:
         print(__version__)
-        exit(0)
+        sys.exit(0)
 
     description = textwrap.dedent(
         """
@@ -163,7 +163,7 @@ def cli():
 
     if len(sys.argv) == 1:
         parser.print_help()
-        exit(0)
+        sys.exit(0)
     else:
         args = parser.parse_args()
 
