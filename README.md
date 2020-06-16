@@ -70,3 +70,12 @@ convert("my_docx_folder/")
 ```
 
 See CLI docs above (or in `docx2pdf --help`) for all the different invocations. It is the same for the CLI and python library.
+
+## Jupyter Notebook
+
+If you are using this in the context of jupyter notebook, you will need `ipywidgets` for the tqdm progress bar to render properly.
+
+```
+pip install ipywidgets
+jupyter nbextension enable --py widgetsnbextension
+``
