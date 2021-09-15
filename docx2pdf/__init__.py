@@ -4,13 +4,14 @@ import subprocess
 from pathlib import Path
 from tqdm.auto import tqdm
 
-try:
-    # 3.8+
-    from importlib.metadata import version
-except ImportError:
-    from importlib_metadata import version
+if sys.version_info[1]>7:
+    try:
+        # 3.8+
+        from importlib.metadata import version
+    except ImportError:
+        from importlib_metadata import version
 
-__version__ = version(__package__)
+    __version__ = version(__package__)
 
 
 def windows(paths, keep_active):
@@ -116,7 +117,8 @@ def cli():
     import argparse
 
     if "--version" in sys.argv:
-        print(__version__)
+        if sys.version_info[1]>7:
+            print(__version__)
         sys.exit(0)
 
     description = textwrap.dedent(
