@@ -86,7 +86,7 @@ def resolve_paths(input_path, output_path):
         output["output"] = output_path
     else:
         output["batch"] = False
-        assert str(input_path).endswith(".docx")
+        assert str(input_path).endswith((".docx", ".DOCX"))
         output["input"] = str(input_path)
         if output_path and output_path.is_dir():
             output_path = str(output_path / (str(input_path.stem) + ".pdf"))
