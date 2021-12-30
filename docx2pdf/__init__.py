@@ -20,7 +20,7 @@ def windows(paths, keep_active):
     wdFormatPDF = 17
 
     if paths["batch"]:
-        for docx_filepath in tqdm(sorted(Path(paths["input"]).glob("*.docx"))):
+        for docx_filepath in tqdm(sorted(Path(paths["input"]).glob("[!~]*.docx"))):
             pdf_filepath = Path(paths["output"]) / (str(docx_filepath.stem) + ".pdf")
             doc = word.Documents.Open(str(docx_filepath))
             doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
