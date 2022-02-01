@@ -50,17 +50,23 @@ def macos(paths, keep_active):
         str(keep_active).lower(),
     ]
 
-    def run(cmd):
-        process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+    total = len(list(Path(paths["input"]).glob("*.docx"))) if paths["batch"] else 1
+    pbar = tqdm(total=total)
+
+    process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+    process.wait()
+    if process.returncode != 0:
+        msg = process.stderr.read().decode().rstrip()
+        raise RuntimeError(msg)
+
+    def stderr_results(process):
         while True:
             line = process.stderr.readline().rstrip()
             if not line:
                 break
             yield line.decode("utf-8")
 
-    total = len(list(Path(paths["input"]).glob("*.docx"))) if paths["batch"] else 1
-    pbar = tqdm(total=total)
-    for line in run(cmd):
+    for line in stderr_results(process):
         try:
             msg = json.loads(line)
         except ValueError:
