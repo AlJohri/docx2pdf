@@ -46,6 +46,6 @@ class TestMacOSFailureModes(unittest.TestCase):
         with TemporaryDirectory() as td:
             input_path = join(td, 'some_file.docx')
             with self.assertRaisesRegex(
-                RuntimeError, 'Application can\'t be found.'
+                EnvironmentError, 'Microsoft Word is not available.'
             ):
                 convert(input_path)
