@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/docx2pdf)](https://pypi.org/project/docx2pdf/)
 
-Convert `docx` to `pdf` on Windows or macOS directly using Microsoft Word (must be installed).
+Convert `docx` to `pdf` on Windows or macOS directly using Microsoft Word (**must be installed**).
 
 On Windows, this is implemented via [`win32com`](https://pypi.org/project/pywin32/) while on macOS this is implemented via [JXA](https://github.com/JXA-Cookbook/JXA-Cookbook) (Javascript for Automation, aka AppleScript in JS).
 
