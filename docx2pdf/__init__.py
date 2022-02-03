@@ -39,6 +39,16 @@ def windows(paths, keep_active):
 
 
 def macos(paths, keep_active):
+    """Run the conversion on a MacOS system. Calls a JXA script, which
+    runs Microsoft Word to do the actual conversion.
+
+    See docstring for convert() for a description of the parameters.
+
+    :raises EnvironmentError: if the JXA exits with nonzero return code
+                              because Microsoft Word is not available
+    :raises RuntimeError: if the JXA exits with nonzero return code for
+                          any other reason
+    """
     script = (Path(__file__).parent / "convert.jxa").resolve()
     cmd = [
         "/usr/bin/osascript",
@@ -50,17 +60,25 @@ def macos(paths, keep_active):
         str(keep_active).lower(),
     ]
 
-    def run(cmd):
-        process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+    total = len(list(Path(paths["input"]).glob("*.docx"))) if paths["batch"] else 1
+    pbar = tqdm(total=total)
+
+    process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+    process.wait()
+    if process.returncode != 0:
+        msg = process.stderr.read().decode().rstrip()
+        if "Application can't be found" in msg:
+            raise EnvironmentError("Microsoft Word is not available.")
+        raise RuntimeError(msg)
+
+    def stderr_results(process):
         while True:
             line = process.stderr.readline().rstrip()
             if not line:
                 break
             yield line.decode("utf-8")
 
-    total = len(list(Path(paths["input"]).glob("*.docx"))) if paths["batch"] else 1
-    pbar = tqdm(total=total)
-    for line in run(cmd):
+    for line in stderr_results(process):
         try:
             msg = json.loads(line)
         except ValueError:
@@ -99,6 +117,18 @@ def resolve_paths(input_path, output_path):
 
 
 def convert(input_path, output_path=None, keep_active=False):
+    """Wrapper around the conversion functions depending on whether the
+    system is Windows or MacOS. The supplied paths are 'resolved' into
+    a dictionary of path information before being given to macos() or
+    windows().
+
+    :param input_path: The path to the docx.
+    :param output_path: The path to the pdf (by default, the same name
+                        and directory as the docx, but with .pdf file
+                        extension).
+    :param keep_active: Whether to keep Microsoft Word running after the
+                        conversion(s) are complete.
+    """
     paths = resolve_paths(input_path, output_path)
     if sys.platform == "darwin":
         return macos(paths, keep_active)
