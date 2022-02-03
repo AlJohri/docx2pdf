@@ -39,15 +39,6 @@ def windows(paths, keep_active):
 
 
 def macos(paths, keep_active):
-    # Verify that Microsoft Word can be launched
-    proc = subprocess.Popen(
-        ['open', '-Ra', 'Microsoft Word'], stderr=subprocess.PIPE
-    )
-    proc.wait()
-    can_launch_msword = (proc.returncode == 0)
-    if not can_launch_msword:
-        raise EnvironmentError('Microsoft Word is not available.')
-
     script = (Path(__file__).parent / "convert.jxa").resolve()
     cmd = [
         "/usr/bin/osascript",
@@ -66,6 +57,8 @@ def macos(paths, keep_active):
     process.wait()
     if process.returncode != 0:
         msg = process.stderr.read().decode().rstrip()
+        if "Application can't be found" in msg:
+            raise EnvironmentError("Microsoft Word is not available.")
         raise RuntimeError(msg)
 
     def stderr_results(process):
