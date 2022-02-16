@@ -20,7 +20,7 @@ def windows(paths, keep_active):
     wdFormatPDF = 17
 
     if paths["batch"]:
-        for docx_filepath in tqdm(sorted(Path(paths["input"]).glob("[!~]*.docx"))):
+        for docx_filepath in tqdm(sorted(Path(paths["input"]).glob("[!~]*.doc*"))):
             pdf_filepath = Path(paths["output"]) / (str(docx_filepath.stem) + ".pdf")
             doc = word.Documents.Open(str(docx_filepath))
             doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
@@ -58,7 +58,7 @@ def macos(paths, keep_active):
                 break
             yield line.decode("utf-8")
 
-    total = len(list(Path(paths["input"]).glob("*.docx"))) if paths["batch"] else 1
+    total = len(list(Path(paths["input"]).glob("*.doc*"))) if paths["batch"] else 1
     pbar = tqdm(total=total)
     for line in run(cmd):
         try:
@@ -86,7 +86,7 @@ def resolve_paths(input_path, output_path):
         output["output"] = output_path
     else:
         output["batch"] = False
-        assert str(input_path).endswith((".docx", ".DOCX"))
+        assert str(input_path).endswith((".docx", ".DOCX", ".doc", ".DOC"))
         output["input"] = str(input_path)
         if output_path and output_path.is_dir():
             output_path = str(output_path / (str(input_path.stem) + ".pdf"))
@@ -123,19 +123,20 @@ def cli():
         """
     Example Usage:
 
-    Convert single docx file in-place from myfile.docx to myfile.pdf:
+    Convert single doc(x) file in-place from myfile.doc(x) to myfile.pdf:
         docx2pdf myfile.docx
+        docx2pdf myfile.doc
 
-    Batch convert docx folder in-place. Output PDFs will go in the same folder:
+    Batch convert doc(x) folder in-place. Output PDFs will go in the same folder:
         docx2pdf myfolder/
 
-    Convert single docx file with explicit output filepath:
-        docx2pdf input.docx output.docx
+    Convert single doc(x) file with explicit output filepath:
+        docx2pdf input.doc(x) output.doc(x)
 
-    Convert single docx file and output to a different explicit folder:
+    Convert single doc(x) file and output to a different explicit folder:
         docx2pdf input.docx output_dir/
 
-    Batch convert docx folder. Output PDFs will go to a different explicit folder:
+    Batch convert doc(x) folder. Output PDFs will go to a different explicit folder:
         docx2pdf input_dir/ output_dir/
     """
     )
