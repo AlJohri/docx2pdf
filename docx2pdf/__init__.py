@@ -123,20 +123,19 @@ def cli():
         """
     Example Usage:
 
-    Convert single doc(x) file in-place from myfile.doc(x) to myfile.pdf:
+    Convert single docx file in-place from myfile.docx to myfile.pdf:
         docx2pdf myfile.docx
-        docx2pdf myfile.doc
 
-    Batch convert doc(x) folder in-place. Output PDFs will go in the same folder:
+    Batch convert docx folder in-place. Output PDFs will go in the same folder:
         docx2pdf myfolder/
 
-    Convert single doc(x) file with explicit output filepath:
-        docx2pdf input.doc(x) output.doc(x)
+    Convert single docx file with explicit output filepath:
+        docx2pdf input.docx output.docx
 
-    Convert single doc(x) file and output to a different explicit folder:
+    Convert single docx file and output to a different explicit folder:
         docx2pdf input.docx output_dir/
 
-    Batch convert doc(x) folder. Output PDFs will go to a different explicit folder:
+    Batch convert docx folder. Output PDFs will go to a different explicit folder:
         docx2pdf input_dir/ output_dir/
     """
     )
