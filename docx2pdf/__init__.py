@@ -161,7 +161,7 @@ def cli():
         "--version", action="store_true", default=False, help="display version and exit"
     )
     parser.add_argument(
-        "--format", default="doc*", help="input format"
+        "--format", default="docx", help="input format"
     )
 
     if len(sys.argv) == 1:
