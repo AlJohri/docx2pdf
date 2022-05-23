@@ -170,4 +170,4 @@ def cli():
     else:
         args = parser.parse_args()
 
-    convert(args.input, args.format, args.output, args.keep_active)
+    convert(args.input, args.format.lower(), args.output, args.keep_active)
