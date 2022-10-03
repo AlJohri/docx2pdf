@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from tqdm.auto import tqdm
 
+time_delay = 0.5
 try:
     # 3.8+
     from importlib.metadata import version
@@ -23,6 +24,7 @@ def windows(paths, keep_active):
         for docx_filepath in tqdm(sorted(Path(paths["input"]).glob("[!~]*.doc*"))):
             pdf_filepath = Path(paths["output"]) / (str(docx_filepath.stem) + ".pdf")
             doc = word.Documents.Open(str(docx_filepath))
+            time.sleep(time_delay)
             doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
             doc.Close(0)
     else:
