@@ -58,17 +58,17 @@ function isDir(path) {
   return isDir[0];
 }
 
-function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
+function parseArgs([inputPath, outputPath, keepActive, hideProgress, ...rest]) {
   const [scriptPath] = getScriptPathAndFolder();
   if (inputPath === undefined || rest.length != 0) {
     console.log(
-      `Error. Usage: ./${scriptPath}.js <INPUT_PATH> <OUTPUT_PATH> <KEEP_ACTIVE>`
+      `Error. Usage: ./${scriptPath}.js <INPUT_PATH> <OUTPUT_PATH> <KEEP_ACTIVE> <HIDE_PROGRESS>`
     );
     $.exit(1);
   }
 
   keepActive = keepActive === "true";
-
+  hideProgress = hideProgress === "true";
   inputPath = Path(inputPath).toString();
   if (!outputPath) outputPath = inputPath;
 
@@ -81,7 +81,7 @@ function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
       isDir(outputPath),
       `inputPath is a directory, but outputPath either does not exist or is not a directory. outputPath: ${outputPath}`
     );
-    output = { batch: true, inputPath, outputPath, keepActive };
+    output = { batch: true, inputPath, outputPath, keepActive, hideProgress};
   } else {
     assert(
       inputPath.endsWith(".docx"),
@@ -97,7 +97,7 @@ function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
       outputPath.endsWith(".pdf"),
       `outputPath does not end with .pdf, outputPath directory may not exist. outputPath: ${outputPath}`
     );
-    output = { batch: false, inputPath, outputPath, keepActive };
+    output = { batch: false, inputPath, outputPath, keepActive, hideProgress};
   }
 
   return output;
