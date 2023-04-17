@@ -13,7 +13,7 @@ except ImportError:
 __version__ = version(__package__)
 
 
-def windows(paths, keep_active):
+def windows(paths, keep_active, hide_progress):
     import win32com.client
 
     word = win32com.client.Dispatch("Word.Application")
@@ -26,19 +26,21 @@ def windows(paths, keep_active):
             doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
             doc.Close(0)
     else:
-        pbar = tqdm(total=1)
+        if not hide_progress:
+            pbar = tqdm(total=1)
         docx_filepath = Path(paths["input"]).resolve()
         pdf_filepath = Path(paths["output"]).resolve()
         doc = word.Documents.Open(str(docx_filepath))
         doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
         doc.Close(0)
-        pbar.update(1)
-
+        if not hide_progress:
+            pbar.update(1)
+            pbar.close()
     if not keep_active:
         word.Quit()
 
 
-def macos(paths, keep_active):
+def macos(paths, keep_active, hide_progress):
     script = (Path(__file__).parent / "convert.jxa").resolve()
     cmd = [
         "/usr/bin/osascript",
@@ -48,6 +50,7 @@ def macos(paths, keep_active):
         str(paths["input"]),
         str(paths["output"]),
         str(keep_active).lower(),
+        str(hide_progress).lower()
     ]
 
     def run(cmd):
@@ -59,14 +62,14 @@ def macos(paths, keep_active):
             yield line.decode("utf-8")
 
     total = len(list(Path(paths["input"]).glob("*.doc*"))) if paths["batch"] else 1
-    pbar = tqdm(total=total)
+    pbar = None if hide_progress else tqdm(total=total)
     for line in run(cmd):
         try:
             msg = json.loads(line)
         except ValueError:
             continue
         if msg["result"] == "success":
-            pbar.update(1)
+            if pbar: pbar.update(1)
         elif msg["result"] == "error":
             print(msg)
             sys.exit(1)
@@ -98,12 +101,12 @@ def resolve_paths(input_path, output_path):
     return output
 
 
-def convert(input_path, output_path=None, keep_active=False):
+def convert(input_path, output_path=None, keep_active=False, hide_progress=False):
     paths = resolve_paths(input_path, output_path)
     if sys.platform == "darwin":
-        return macos(paths, keep_active)
+        return macos(paths, keep_active, hide_progress)
     elif sys.platform == "win32":
-        return windows(paths, keep_active)
+        return windows(paths, keep_active, hide_progress)
     else:
         raise NotImplementedError(
             "docx2pdf is not implemented for linux as it requires Microsoft Word to be installed"
@@ -158,6 +161,12 @@ def cli():
         help="prevent closing word after conversion",
     )
     parser.add_argument(
+        "--hide-progress",
+        action="store_true",
+        default=False,
+        help="prevent closing word after conversion",
+    )
+    parser.add_argument(
         "--version", action="store_true", default=False, help="display version and exit"
     )
 
@@ -167,4 +176,4 @@ def cli():
     else:
         args = parser.parse_args()
 
-    convert(args.input, args.output, args.keep_active)
+    convert(args.input, args.output, args.keep_active, args.hide_progress)
