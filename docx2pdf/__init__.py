@@ -30,7 +30,9 @@ def windows(paths, keep_active):
         docx_filepath = Path(paths["input"]).resolve()
         pdf_filepath = Path(paths["output"]).resolve()
         doc = word.Documents.Open(str(docx_filepath))
-        doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+        # @taylormadeapps 27/04/23 change the doc.SaveAs to doc.SaveAs2 to work with more recent versions of word.
+        # see git hub issue: https://github.com/AlJohri/docx2pdf/issues/77
+        doc.SaveAs2(str(pdf_filepath), FileFormat=wdFormatPDF)
         doc.Close(0)
         pbar.update(1)
 
