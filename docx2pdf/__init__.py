@@ -1,6 +1,7 @@
 import sys
 import json
 import subprocess
+import pythoncom
 from pathlib import Path
 from tqdm.auto import tqdm
 
@@ -16,7 +17,7 @@ __version__ = version(__package__)
 def windows(paths, keep_active):
     import win32com.client
 
-    word = win32com.client.Dispatch("Word.Application")
+    word = win32com.client.Dispatch("Word.Application",pythoncom.CoInitialize())
     wdFormatPDF = 17
 
     if paths["batch"]:
