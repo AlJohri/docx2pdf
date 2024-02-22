@@ -23,15 +23,23 @@ def windows(paths, keep_active):
         for docx_filepath in tqdm(sorted(Path(paths["input"]).glob("[!~]*.doc*"))):
             pdf_filepath = Path(paths["output"]) / (str(docx_filepath.stem) + ".pdf")
             doc = word.Documents.Open(str(docx_filepath))
-            doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
-            doc.Close(0)
+            try:
+                doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+            except:
+                raise
+            finally:
+                doc.Close(0)
     else:
         pbar = tqdm(total=1)
         docx_filepath = Path(paths["input"]).resolve()
         pdf_filepath = Path(paths["output"]).resolve()
         doc = word.Documents.Open(str(docx_filepath))
-        doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
-        doc.Close(0)
+        try:
+            doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
+        except:
+            raise
+        finally:
+            doc.Close(0)
         pbar.update(1)
 
     if not keep_active:
