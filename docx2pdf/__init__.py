@@ -1,6 +1,7 @@
 import sys
 import json
 import subprocess
+import pythoncom
 from pathlib import Path
 from tqdm.auto import tqdm
 
@@ -15,7 +16,7 @@ __version__ = version(__package__)
 
 def windows(paths, keep_active):
     import win32com.client
-
+    pythoncom.CoInitialize()
     word = win32com.client.Dispatch("Word.Application")
     wdFormatPDF = 17
 
