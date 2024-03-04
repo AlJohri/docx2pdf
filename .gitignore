@@ -2,3 +2,5 @@
 *.egg-info
 .venv
 dist/
+# JetBrains IDEs (PyCharm, IntelliJ, etc.) project settings and configuration
+.idea/
