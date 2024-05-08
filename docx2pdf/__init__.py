@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import subprocess
@@ -11,7 +12,6 @@ except ImportError:
     from importlib_metadata import version
 
 __version__ = version(__package__)
-
 
 def windows(paths, keep_active):
     import win32com.client
@@ -45,17 +45,16 @@ def windows(paths, keep_active):
     if not keep_active:
         word.Quit()
 
-
-def macos(paths, keep_active):
-    script = (Path(__file__).parent / "convert.jxa").resolve()
+def linux(paths, keep_active):
+    # Use LibreOffice for conversion on Linux
     cmd = [
-        "/usr/bin/osascript",
-        "-l",
-        "JavaScript",
-        str(script),
-        str(paths["input"]),
-        str(paths["output"]),
-        str(keep_active).lower(),
+        "libreoffice",
+        "--headless",
+        "--convert-to",
+        "pdf",
+        "--outdir",
+        paths["output"],
+        paths["input"]
     ]
 
     def run(cmd):
@@ -78,7 +77,6 @@ def macos(paths, keep_active):
         elif msg["result"] == "error":
             print(msg)
             sys.exit(1)
-
 
 def resolve_paths(input_path, output_path):
     input_path = Path(input_path).resolve()
@@ -105,18 +103,18 @@ def resolve_paths(input_path, output_path):
         output["output"] = output_path
     return output
 
-
 def convert(input_path, output_path=None, keep_active=False):
     paths = resolve_paths(input_path, output_path)
     if sys.platform == "darwin":
         return macos(paths, keep_active)
     elif sys.platform == "win32":
         return windows(paths, keep_active)
+    elif sys.platform.startswith("linux"):
+        return linux(paths, keep_active)
     else:
         raise NotImplementedError(
-            "docx2pdf is not implemented for linux as it requires Microsoft Word to be installed"
+            "docx2pdf is not implemented for this platform"
         )
-
 
 def cli():
 
@@ -176,3 +174,4 @@ def cli():
         args = parser.parse_args()
 
     convert(args.input, args.output, args.keep_active)
+
