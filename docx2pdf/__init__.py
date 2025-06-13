@@ -173,6 +173,9 @@ def cli():
     parser.add_argument(
         "--version", action="store_true", default=False, help="display version and exit"
     )
+    parser.add_argument(
+    "--no-progress", action="store_true", default=False, help="disable progress bar during conversion",
+    )
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -180,4 +183,4 @@ def cli():
     else:
         args = parser.parse_args()
 
-    convert(args.input, args.output, args.keep_active)
+    convert(args.input, args.output, args.keep_active, show_progress=not args.no_progress)
