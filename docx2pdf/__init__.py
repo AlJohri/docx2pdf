@@ -13,7 +13,7 @@ except ImportError:
 __version__ = version(__package__)
 
 
-def windows(paths, keep_active, show_progress=True):
+def windows(paths, keep_active, show_progress):
     import win32com.client
 
     word = win32com.client.Dispatch("Word.Application")
@@ -51,7 +51,7 @@ def windows(paths, keep_active, show_progress=True):
         word.Quit()
 
 
-def macos(paths, keep_active, show_progress=True):
+def macos(paths, keep_active, show_progress):
     script = (Path(__file__).parent / "convert.jxa").resolve()
     cmd = [
         "/usr/bin/osascript",
@@ -111,12 +111,12 @@ def resolve_paths(input_path, output_path):
     return output
 
 
-def convert(input_path, output_path=None, keep_active=False):
+def convert(input_path, output_path=None, keep_active=False, show_progress = True):
     paths = resolve_paths(input_path, output_path)
     if sys.platform == "darwin":
-        return macos(paths, keep_active)
+        return macos(paths, keep_active, show_progress)
     elif sys.platform == "win32":
-        return windows(paths, keep_active)
+        return windows(paths, keep_active, show_progress)
     else:
         raise NotImplementedError(
             "docx2pdf is not implemented for linux as it requires Microsoft Word to be installed"
