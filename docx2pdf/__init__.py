@@ -13,14 +13,17 @@ except ImportError:
 __version__ = version(__package__)
 
 
-def windows(paths, keep_active):
+def windows(paths, keep_active, show_progress=True):
     import win32com.client
 
     word = win32com.client.Dispatch("Word.Application")
     wdFormatPDF = 17
 
     if paths["batch"]:
-        for docx_filepath in tqdm(sorted(Path(paths["input"]).glob("[!~]*.doc*"))):
+        docx_files = sorted(Path(paths["input"]).glob("[!~]*.doc*"))
+        iterator = tqdm(docx_files) if show_progress else docx_files
+
+        for docx_filepath in iterator:
             pdf_filepath = Path(paths["output"]) / (str(docx_filepath.stem) + ".pdf")
             doc = word.Documents.Open(str(docx_filepath))
             try:
@@ -30,7 +33,8 @@ def windows(paths, keep_active):
             finally:
                 doc.Close(0)
     else:
-        pbar = tqdm(total=1)
+        if show_progress:
+            pbar = tqdm(total=1)
         docx_filepath = Path(paths["input"]).resolve()
         pdf_filepath = Path(paths["output"]).resolve()
         doc = word.Documents.Open(str(docx_filepath))
@@ -40,13 +44,14 @@ def windows(paths, keep_active):
             raise
         finally:
             doc.Close(0)
-        pbar.update(1)
+        if show_progress:
+            pbar.update(1)
 
     if not keep_active:
         word.Quit()
 
 
-def macos(paths, keep_active):
+def macos(paths, keep_active, show_progress=True):
     script = (Path(__file__).parent / "convert.jxa").resolve()
     cmd = [
         "/usr/bin/osascript",
@@ -67,13 +72,13 @@ def macos(paths, keep_active):
             yield line.decode("utf-8")
 
     total = len(list(Path(paths["input"]).glob("*.doc*"))) if paths["batch"] else 1
-    pbar = tqdm(total=total)
+    pbar = tqdm(total=total) if show_progress else None
     for line in run(cmd):
         try:
             msg = json.loads(line)
         except ValueError:
             continue
-        if msg["result"] == "success":
+        if msg["result"] == "success" and show_progress:
             pbar.update(1)
         elif msg["result"] == "error":
             print(msg)
