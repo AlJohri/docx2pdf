@@ -138,7 +138,7 @@ def cli():
         docx2pdf myfolder/
 
     Convert single docx file with explicit output filepath:
-        docx2pdf input.docx output.docx
+        docx2pdf input.docx output.pdf
 
     Convert single docx file and output to a different explicit folder:
         docx2pdf input.docx output_dir/

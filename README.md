@@ -78,4 +78,4 @@ If you are using this in the context of jupyter notebook, you will need `ipywidg
 ```
 pip install ipywidgets
 jupyter nbextension enable --py widgetsnbextension
-``
+```
