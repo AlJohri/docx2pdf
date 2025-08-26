@@ -53,9 +53,10 @@ positional arguments:
                  single file
   output         output file or folder
 
-optional arguments:
+options:
   -h, --help     show this help message and exit
   --keep-active  prevent closing word after conversion
+  --libreoffice  use libreoffice instead of msoffice
   --version      display version and exit
 ```
 

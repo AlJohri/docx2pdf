@@ -80,6 +80,41 @@ def macos(paths, keep_active):
             sys.exit(1)
 
 
+def libreoffice(paths):
+    # Use LibreOffice for conversion on Linux
+    inputs = list(Path(paths["input"]).glob("*.doc*")) if paths["batch"] else [paths["input"]]
+    cmd = [
+        "libreoffice",
+        "--headless",
+        "--convert-to",
+        "pdf",
+        "--outdir",
+        paths["output"],
+        *inputs
+    ]
+
+    def run(cmd):
+        process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+        while True:
+            line = process.stderr.readline().rstrip()
+            if not line:
+                break
+            yield line.decode("utf-8")
+
+    total = len(inputs)
+    pbar = tqdm(total=total)
+    for line in run(cmd):
+        try:
+            msg = json.loads(line)
+        except ValueError:
+            continue
+        if msg["result"] == "success":
+            pbar.update(1)
+        elif msg["result"] == "error":
+            print(msg)
+            sys.exit(1)
+
+
 def resolve_paths(input_path, output_path):
     input_path = Path(input_path).resolve()
     output_path = Path(output_path).resolve() if output_path else None
@@ -106,15 +141,17 @@ def resolve_paths(input_path, output_path):
     return output
 
 
-def convert(input_path, output_path=None, keep_active=False):
+def convert(input_path, output_path=None, keep_active=False, use_libre_office=False):
     paths = resolve_paths(input_path, output_path)
-    if sys.platform == "darwin":
-        return macos(paths, keep_active)
+    if sys.platform.startswith("linux") or use_libre_office:
+        return libreoffice(paths)
     elif sys.platform == "win32":
         return windows(paths, keep_active)
+    elif sys.platform == "darwin":
+        return macos(paths, keep_active)
     else:
         raise NotImplementedError(
-            "docx2pdf is not implemented for linux as it requires Microsoft Word to be installed"
+            f"docx2pdf is not implemented for platform {sys.platform}"
         )
 
 
@@ -166,6 +203,12 @@ def cli():
         help="prevent closing word after conversion",
     )
     parser.add_argument(
+        "--libreoffice",
+        action="store_true",
+        default=False,
+        help="use libreoffice instead of msoffice",
+    )
+    parser.add_argument(
         "--version", action="store_true", default=False, help="display version and exit"
     )
 
@@ -175,4 +218,4 @@ def cli():
     else:
         args = parser.parse_args()
 
-    convert(args.input, args.output, args.keep_active)
+    convert(args.input, args.output, args.keep_active, args.libreoffice)
