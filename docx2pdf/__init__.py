@@ -3,6 +3,7 @@ import json
 import subprocess
 from pathlib import Path
 from tqdm.auto import tqdm
+from ntpath import basename
 
 try:
     # 3.8+
@@ -30,9 +31,9 @@ def windows(paths, keep_active):
             finally:
                 doc.Close(0)
     else:
-        pbar = tqdm(total=1)
         docx_filepath = Path(paths["input"]).resolve()
         pdf_filepath = Path(paths["output"]).resolve()
+        pbar = tqdm(desc=str(basename(pdf_filepath)), total=1)
         doc = word.Documents.Open(str(docx_filepath))
         try:
             doc.SaveAs(str(pdf_filepath), FileFormat=wdFormatPDF)
@@ -41,6 +42,7 @@ def windows(paths, keep_active):
         finally:
             doc.Close(0)
         pbar.update(1)
+        pbar.close()
 
     if not keep_active:
         word.Quit()
