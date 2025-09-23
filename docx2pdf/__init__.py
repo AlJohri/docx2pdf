@@ -13,14 +13,17 @@ except ImportError:
 __version__ = version(__package__)
 
 
-def windows(paths, keep_active):
+def windows(paths, keep_active, show_progress):
     import win32com.client
 
     word = win32com.client.Dispatch("Word.Application")
     wdFormatPDF = 17
 
     if paths["batch"]:
-        for docx_filepath in tqdm(sorted(Path(paths["input"]).glob("[!~]*.doc*"))):
+        docx_files = sorted(Path(paths["input"]).glob("[!~]*.doc*"))
+        iterator = tqdm(docx_files) if show_progress else docx_files
+
+        for docx_filepath in iterator:
             pdf_filepath = Path(paths["output"]) / (str(docx_filepath.stem) + ".pdf")
             doc = word.Documents.Open(str(docx_filepath))
             try:
@@ -30,7 +33,8 @@ def windows(paths, keep_active):
             finally:
                 doc.Close(0)
     else:
-        pbar = tqdm(total=1)
+        if show_progress:
+            pbar = tqdm(total=1)
         docx_filepath = Path(paths["input"]).resolve()
         pdf_filepath = Path(paths["output"]).resolve()
         doc = word.Documents.Open(str(docx_filepath))
@@ -40,13 +44,14 @@ def windows(paths, keep_active):
             raise
         finally:
             doc.Close(0)
-        pbar.update(1)
+        if show_progress:
+            pbar.update(1)
 
     if not keep_active:
         word.Quit()
 
 
-def macos(paths, keep_active):
+def macos(paths, keep_active, show_progress):
     script = (Path(__file__).parent / "convert.jxa").resolve()
     cmd = [
         "/usr/bin/osascript",
@@ -67,13 +72,13 @@ def macos(paths, keep_active):
             yield line.decode("utf-8")
 
     total = len(list(Path(paths["input"]).glob("*.doc*"))) if paths["batch"] else 1
-    pbar = tqdm(total=total)
+    pbar = tqdm(total=total) if show_progress else None
     for line in run(cmd):
         try:
             msg = json.loads(line)
         except ValueError:
             continue
-        if msg["result"] == "success":
+        if msg["result"] == "success" and show_progress:
             pbar.update(1)
         elif msg["result"] == "error":
             print(msg)
@@ -106,12 +111,12 @@ def resolve_paths(input_path, output_path):
     return output
 
 
-def convert(input_path, output_path=None, keep_active=False):
+def convert(input_path, output_path=None, keep_active=False, show_progress = True):
     paths = resolve_paths(input_path, output_path)
     if sys.platform == "darwin":
-        return macos(paths, keep_active)
+        return macos(paths, keep_active, show_progress)
     elif sys.platform == "win32":
-        return windows(paths, keep_active)
+        return windows(paths, keep_active, show_progress)
     else:
         raise NotImplementedError(
             "docx2pdf is not implemented for linux as it requires Microsoft Word to be installed"
@@ -168,6 +173,9 @@ def cli():
     parser.add_argument(
         "--version", action="store_true", default=False, help="display version and exit"
     )
+    parser.add_argument(
+    "--no-progress", action="store_true", default=False, help="disable progress bar during conversion",
+    )
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -175,4 +183,4 @@ def cli():
     else:
         args = parser.parse_args()
 
-    convert(args.input, args.output, args.keep_active)
+    convert(args.input, args.output, args.keep_active, show_progress=not args.no_progress)
