@@ -58,16 +58,17 @@ function isDir(path) {
   return isDir[0];
 }
 
-function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
+function parseArgs([inputPath, outputPath, keepActive, headless, ...rest]) {
   const [scriptPath] = getScriptPathAndFolder();
   if (inputPath === undefined || rest.length != 0) {
     console.log(
-      `Error. Usage: ./${scriptPath}.js <INPUT_PATH> <OUTPUT_PATH> <KEEP_ACTIVE>`
+      `Error. Usage: ./${scriptPath}.js <INPUT_PATH> <OUTPUT_PATH> <KEEP_ACTIVE> <HEADLESS>`
     );
     $.exit(1);
   }
 
   keepActive = keepActive === "true";
+  headless = headless === "true";
 
   inputPath = Path(inputPath).toString();
   if (!outputPath) outputPath = inputPath;
@@ -81,7 +82,7 @@ function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
       isDir(outputPath),
       `inputPath is a directory, but outputPath either does not exist or is not a directory. outputPath: ${outputPath}`
     );
-    output = { batch: true, inputPath, outputPath, keepActive };
+    output = { batch: true, inputPath, outputPath, keepActive, headless };
   } else {
     assert(
       inputPath.endsWith(".docx"),
@@ -97,7 +98,7 @@ function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
       outputPath.endsWith(".pdf"),
       `outputPath does not end with .pdf, outputPath directory may not exist. outputPath: ${outputPath}`
     );
-    output = { batch: false, inputPath, outputPath, keepActive };
+    output = { batch: false, inputPath, outputPath, keepActive, headless };
   }
 
   return output;
@@ -105,14 +106,27 @@ function parseArgs([inputPath, outputPath, keepActive, ...rest]) {
 
 function run(args) {
   args = parseArgs(args);
-  const word = Application("Microsoft Word");
-  if (!word.running()) {
-    word.activate();
-    delay(1);
-    SystemEvents.processes["Microsoft Word"].visible = false;
+  var word = Application("Microsoft Word");
+
+  if(args.headless) {
+    if(!word.running()) {
+      Application.currentApplication().doShellScript('open -j -a "Microsoft Word"');
+      delay(2);
+    }
+    try {
+        SystemEvents.processes("Microsoft Word").visible = false;
+    } catch (e) {
+        console.log("Warning: Could not hide Word UI")
+    }
   } else {
-    word.launch();
-    SystemEvents.processes["Microsoft Word"].visible = false;
+    if (!word.running()) {
+      word.activate();
+      delay(1);
+      SystemEvents.processes["Microsoft Word"].visible = false;
+    } else {
+      word.launch();
+      SystemEvents.processes["Microsoft Word"].visible = false;
+    }
   }
 
   if (args.batch) {

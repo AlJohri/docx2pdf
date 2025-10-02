@@ -46,7 +46,7 @@ def windows(paths, keep_active):
         word.Quit()
 
 
-def macos(paths, keep_active):
+def macos(paths, keep_active, headless=False):
     script = (Path(__file__).parent / "convert.jxa").resolve()
     cmd = [
         "/usr/bin/osascript",
@@ -56,6 +56,7 @@ def macos(paths, keep_active):
         str(paths["input"]),
         str(paths["output"]),
         str(keep_active).lower(),
+        str(headless).lower()
     ]
 
     def run(cmd):
@@ -106,10 +107,10 @@ def resolve_paths(input_path, output_path):
     return output
 
 
-def convert(input_path, output_path=None, keep_active=False):
+def convert(input_path, output_path=None, keep_active=False, headless=False):
     paths = resolve_paths(input_path, output_path)
     if sys.platform == "darwin":
-        return macos(paths, keep_active)
+        return macos(paths, keep_active, headless=headless)
     elif sys.platform == "win32":
         return windows(paths, keep_active)
     else:
@@ -164,6 +165,12 @@ def cli():
         action="store_true",
         default=False,
         help="prevent closing word after conversion",
+    )
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        default=False,
+        help="run Word invisibly (macOS only)",
     )
     parser.add_argument(
         "--version", action="store_true", default=False, help="display version and exit"
